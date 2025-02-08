@@ -22,22 +22,24 @@ async function connectToWhatsApp() {
     });
 
     sock.ev.on("messages.upsert", async (msg) => {
-        const message = msg.messages[0];
-        if (!message.message || message.key.fromMe) return;
+    const message = msg.messages[0];
+    if (!message.message || message.key.fromMe) return;
 
-        const sender = message.key.remoteJid;
-        const text = message.message.conversation || message.message.extendedTextMessage?.text;
+    const sender = message.key.remoteJid;
+    const text = message.message.conversation || message.message.extendedTextMessage?.text;
 
-        console.log(`📩 Pesan diterima dari ${sender}: ${text}`);
+    console.log(`📩 Pesan diterima dari ${sender}: ${text}`);
 
-        // 🛑 Tentukan kriteria pesan yang akan diteruskan
-        const keyword = "kehadiran"; // Ganti dengan kata kunci yang diinginkan
-        if (text?.toLowerCase().includes(keyword)) {
-            const target = "120363228624527147@g.us"; // Ganti dengan nomor tujuan (harus pakai kode negara)
-            await sock.sendMessage(target, { text: `${text}` });
-            console.log(`➡️ Pesan diteruskan ke ${target}`);
-        }
-    });
+    // ✅ Tambahkan lebih dari satu keyword
+    const keywords = ["kehadiran", "jadwal"]; // Tambahkan keyword di sini
+    const isMatchingKeyword = keywords.some((kw) => text?.toLowerCase().includes(kw));
+
+    if (isMatchingKeyword) {
+        const target = "120363228624527147@g.us"; // Ganti dengan ID grup tujuan
+        await sock.sendMessage(target, { text: `${text}` });
+        console.log(`➡️ Pesan diteruskan ke ${target}`);
+    }
+});
 
     sock.ev.on("creds.update", saveCreds);
 }
